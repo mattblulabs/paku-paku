@@ -21,4 +21,4 @@ app.use(async function (ctx) {
 
 
 
-app.listen(8086)
+app.listen(process.env.PORT || 8086)
