@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "koa": "^2.13.4"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4",
+    "@types/koa": "^2.13.5",
+    "tsc-watch": "^5.0.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc-watch --onSuccess \"node --experimental-fetch build/index.js\""
+  }
+}
