@@ -1,0 +1,59 @@
+$charcoal: #373f51ff;
+$dark-turquoise: #50c9ceff;
+$little-boy-blue: #72a1e5ff;
+$medium-purple: #9883e5ff;
+$mimi-pink: #fcd3deff;
+$seashell: #fbf4efff;
+
+
+body {
+    margin: 0;
+    padding: 0;
+    max-width: 100vw;
+    font-family: sans-serif;
+    color: $seashell;
+    background-color: $charcoal;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+}
+
+.paku-form {
+    margin: 2rem;
+    width: 45vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    input {
+        display: flex;
+        width: 100%;
+        margin: 1rem;
+        padding: .5rem;
+        font-size: 1rem;
+        background: $seashell;
+        color: $charcoal;
+        border-radius: .25rem;
+        outline: none;
+        border: .25rem solid $little-boy-blue;
+        &[type="submit"] {
+            
+            justify-content: center;
+            color: $seashell;
+            background-color: $dark-turquoise;
+        }
+        &:focus {
+            border-color: $medium-purple;
+        }
+        
+    }
+}

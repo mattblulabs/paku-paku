@@ -1,67 +1,63 @@
 
-interface PacApiWrapperOptions {
-    pacHost: string;
-    pacProtocol?: 'http' | 'https',
-}
-
 interface SearchApiOptions {
-    "searchTerm": string,
-    "startIndex": number,
-    "hitsPerPage": number,
-    // "facetFilters": [],
-    // "branchFilters": [],
-    // "sortCriteria": "Relevancy",
-    // "targetAudience": "",
-    // "addToHistory": true,
-    // "dbCodes": [],
-    // "audienceCharacteristicsFilters": [],
-    // "readingLevelFilters": null
+    searchTerm: string,
+    startIndex: number,
+    hitsPerPage: number,
+    facetFilters: string[],
+    branchFilters: string[],
+    sortCriteria: string,
+    targetAudience: string,
+    addToHistory: true,
+    dbCodes: string[],
+    audienceCharacteristicsFilters: string[],
+    readingLevelFilters: null
 }
 
 export function parseSearchApiOptions<Opts extends Partial<SearchApiOptions>>(
- {
-    searchTerm = "",
-    startIndex = 0,
-    hitsPerPage = 20
- }: Opts
+    {
+        searchTerm = "",
+        startIndex = 0,
+        hitsPerPage = 20,
+        facetFilters = [],
+        branchFilters = [],
+        sortCriteria = "Relevancy",
+        targetAudience = "",
+        addToHistory = true,
+        dbCodes = [],
+        audienceCharacteristicsFilters = [],
+        readingLevelFilters = null
+    }: Opts
 ): SearchApiOptions {
     return {
         searchTerm,
         startIndex,
-        hitsPerPage
+        hitsPerPage,
+        facetFilters,
+        branchFilters,
+        sortCriteria,
+        targetAudience,
+        addToHistory,
+        dbCodes,
+        audienceCharacteristicsFilters,
+        readingLevelFilters
     }
 }
 
-export function createPacApiWrapper({
-    pacHost,
-    pacProtocol = 'https',
-}: PacApiWrapperOptions) {
-    function fetchWrapper<BodyType>(resource: string, body: BodyType) {
-        return fetch(`${pacProtocol}://${pacHost}/${resource}?_=${Date.now()}`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        }).then(r => r.json())
+export function createPacApiWrapper(pacHost: string) {
+    function fetchWrapper<OptionsType>(resource: string, optionsParser: (options: Partial<OptionsType>) => OptionsType) {
+        return function (options: Partial<OptionsType>) {
+            return fetch(`https://${pacHost}/${resource}?_=${Date.now()}`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(optionsParser(options))
+            }).then(r => r.json())
+        }
     }
 
     return {
-        search: function ({ searchTerm, startIndex, hitsPerPage }: SearchApiOptions) {
-            return fetchWrapper('search', {
-                searchTerm,
-                startIndex,
-                hitsPerPage,
-                facetFilters: [],
-                branchFilters: [],
-                sortCriteria: "Relevancy",
-                targetAudience: "",
-                addToHistory: true,
-                dbCodes: [],
-                audienceCharacteristicsFilters: [],
-                readingLevelFilters: null
-            })
-        }
+        search: fetchWrapper('search', parseSearchApiOptions)
     }
 
 }

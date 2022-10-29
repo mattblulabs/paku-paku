@@ -1,35 +1,45 @@
 import Koa, { ParameterizedContext, DefaultState, DefaultContext } from 'koa';
 import Router from '@koa/router';
-import { createPacApiWrapper, parseSearchApiOptions } from './pacApiWrapper';
-import { createDataComponent, Index, renderTemplate } from './templates';
+import { createPacApiWrapper } from './pacApiWrapper';
+import { createDataComponent, renderTemplate, Search } from './templates';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path'
 
 const paku = new Koa();
 const router = new Router();
 
-async function usePacHost(pacHost: string, ctx: ParameterizedContext<DefaultState, DefaultContext, any>) {
-    return await createPacApiWrapper({ pacHost }).search(parseSearchApiOptions(ctx.query));
+function usePacHost(ctx: ParameterizedContext<DefaultState, DefaultContext, any>) {
+    if (typeof ctx.query.pacHost === 'string' && ctx.query.pacHost.length) {
+        return createPacApiWrapper(ctx.query.pacHost)
+    }
 }
 
+router.redirect('/', '/search');
 
+router.get('/styles.css', async function (ctx) {
+    ctx.body = await (await readFile(join(__dirname, '../styles.css'))).toString();
+    ctx.set('Content-Type', 'text/css');
+})
 
-router.get('/', async function (ctx) {
-    if (typeof ctx.query.pacHost === 'string') {
-        ctx.body = renderTemplate(createDataComponent(await usePacHost(ctx.query.pacHost, ctx)));
+router.get('/search', async function (ctx) {
+    const api = usePacHost(ctx);
+    if (api) {
+        ctx.body = renderTemplate(createDataComponent(await api.search(ctx.query)));
     } else {
-        ctx.body = renderTemplate(Index);
+        ctx.body = renderTemplate(Search);
     }
 })
 
-router.get('/api', async function (ctx) {
-    if (typeof ctx.query.pacHost === 'string') {
-        ctx.body = await usePacHost(ctx.query.pacHost, ctx);
+router.get('/api/search', async function (ctx) {
+    const api = usePacHost(ctx);
+    if (api) {
+        ctx.body = await api.search(ctx.query);
     } else {
-        ctx.status = 400;
+        ctx.status = 400
         ctx.body = {
-            message: "invalid or no pac host provided"
-        };
+            message: "No or invalid PAC Host"
+        }
     }
-
 })
 
 
